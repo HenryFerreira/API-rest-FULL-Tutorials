@@ -59,6 +59,20 @@ public class TutorialController {
 		}
 	}
 
+	@GetMapping("/tutorials/title")
+	public ResponseEntity<List<Tutorial>> findByTitle(@RequestParam("title") String title) {
+		try {
+			List<Tutorial> tutorials = tutorialRepository.findByTitle(title);
+
+			if (tutorials.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}
+			return new ResponseEntity<>(tutorials, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+		}
+	}
+
 
 	@PostMapping("/tutorials")
 	public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
@@ -93,6 +107,21 @@ public class TutorialController {
 			tutorialRepository.deleteById(id);
 				return new ResponseEntity<>("Tutorials DELETE!! ",HttpStatus.NO_CONTENT);
 			} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+		}
+	}
+
+	@DeleteMapping("/tutorials/deleteByTitle")
+	public ResponseEntity<String> deleteByTitle(@RequestParam(value = "title") String title) {
+		try {
+			Iterator it = tutorialRepository.findByTitle(title).iterator();
+
+			while (it.hasNext()){
+				Tutorial element = (Tutorial)it.next();
+				tutorialRepository.deleteById(element.getId());
+			}
+			return new ResponseEntity<String>("Tutorials by Title DELETE!! [" + title + "]", HttpStatus.NO_CONTENT);
+		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
 		}
 	}
