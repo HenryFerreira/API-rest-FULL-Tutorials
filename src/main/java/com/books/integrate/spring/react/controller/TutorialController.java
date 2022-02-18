@@ -60,11 +60,10 @@ public class TutorialController {
     }
 
     //----------------------------------------------------------------------------------------------------------------//
-    @GetMapping("/tutorials/title")
-    public ResponseEntity<Tutorial> findByTitle(@RequestParam("title") String title) {
+    @GetMapping("/tutorials/search/{title}")
+    public ResponseEntity<Tutorial> findByTitle(@PathVariable("title") String title) {
         try {
             Tutorial tutorials = tutorialRepository.findByTitle(title);
-
             if (tutorials == null) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
@@ -87,7 +86,20 @@ public class TutorialController {
     }
 
     //----------------------------------------------------------------------------------------------------------------//
+    @PutMapping("/tutorials/update/{title}")
+    public ResponseEntity<Tutorial> updateTutorialByTitle(@PathVariable("title") String title, @RequestBody Tutorial tutorial) {
+        Optional<Tutorial> tutorialActualizado = Optional.ofNullable(tutorialRepository.findByTitle(title));
 
+        if (tutorialActualizado.isPresent()) {
+            Tutorial _tutorial = tutorialActualizado.get();
+            _tutorial.setTitle(tutorial.getTitle());
+            _tutorial.setDescription(tutorial.getDescription());
+            _tutorial.setPublished(tutorial.isPublished());
+            return new ResponseEntity<>(tutorialRepository.save(_tutorial), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
     //----------------------------------------------------------------------------------------------------------------//
 
     @PutMapping("/tutorials/{id}")
@@ -117,13 +129,11 @@ public class TutorialController {
     }
 
     //----------------------------------------------------------------------------------------------------------------//
-    @DeleteMapping("/tutorials/deleteByTitle")
-    public ResponseEntity<String> deleteByTitle(@RequestParam(value = "title") String title) {
+    @DeleteMapping("/tutorials/delete/{title}")
+    public ResponseEntity<String> deleteByTitle(@PathVariable("title") String title) {
         try {
-
-            Tutorial tutorial = tutorialRepository.findByTitle(title);
-            tutorialRepository.deleteById(tutorial.getId());
-
+            Tutorial tutorialEliminar = tutorialRepository.findByTitle(title);
+            tutorialRepository.deleteById(tutorialEliminar.getId());
             return new ResponseEntity<String>("Tutorials by Title DELETE!! [" + title + "]", HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
